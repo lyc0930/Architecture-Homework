@@ -1,0 +1,135 @@
+\documentclass{article}
+\usepackage[UTF8]{ctex}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{float}
+\title{Homework 1}
+\author{PB17000297 罗晏宸}
+\date{March 1 2020}
+
+\begin{document}
+\maketitle
+
+\section{Exercise 1.8}
+架构师面对的一个挑战是， 今天拟定的设计方案可能需要几年的时间进行实施、 验证和测试， 然后才能上市。这就意味着架构师必须提前为几年后的技术进步制定计划。有时， 这很难做到。
+\subparagraph{1}
+根据摩尔定律观测到的器件发展趋势， 到2025年， 一个芯片上的晶体管数目应当是2005年的多少倍？
+\subparagraph{2}
+芯片性能的提升也反映了这一趋势。 如果2003年后芯片性能仍以20世纪90年代的相同速度攀升， 到2025年芯片的性能将会是VAX-11/780的多少倍？
+\subparagraph{3}
+若2003年后以当前的增长速率， 2025年的芯片性能将会是VAX-11/780的多少倍？
+\subparagraph{4}
+是什么限制了时钟频率的增长速度？ 为了提升性能， 架构师现在能用多出来的晶体管做些什么？
+\subparagraph{5}
+DRAM容量的增长速度也已变缓慢。20年来， DRAM容量每年提高60\%。如果\SI{8}{Gbit} DRAM在2015年首次出现， \SI{16}{Gbit}直到2019年才出现， 那么DRAM容量这段时间的增长速率是多少？
+
+\paragraph{解}
+\subparagraph{1}
+晶体管密度每年大约增加35\%，因此经过20年：
+\begin{equation*}
+    (1 + 35\%)^{10} \approx 20.1066
+\end{equation*}
+即2025年时一个芯片上的晶体管数目约是2005年的20倍。
+\subparagraph{2}
+2003年时处理器性能为Intel Xeon EE \SI{3.2}{GHz}，若芯片性能仍以20世纪90年代的速度年增长52\%攀升，则
+\begin{equation*}
+    \frac{\SI{3.2}{GHz} \times (1 + 52\%)^{22}}{\SI{5}{MHz}} \approx 6.40824 \times 10^{6}
+\end{equation*}
+即到2025年芯片的性能将会是VAX-11/780的约640万倍。
+\subparagraph{3}
+若2003年后以当前的增长速率22\%， 则
+\begin{equation*}
+    \frac{\SI{3.2}{GHz} \times (1 + 22\%)^{22}}{\SI{5}{MHz}} \approx 50827.2
+\end{equation*}
+即到2025年芯片的性能将会是VAX-11/780的约5万倍。
+\subparagraph{4}
+2003年之后，功耗和可用指令级并行的限制减慢了单核处理器性能的增长速度，在越来越小的区域内，功率密度不断增加，产生的热量使得散热器工作效率过低，这限制了芯片上晶体管的活动。架构师不再一味增加时钟频率，而是在芯片上放置多个内核。
+\subparagraph{5}
+设DRAM容量这段时间的年增长速率为$x$，则有
+\begin{align*}
+    &&\SI{8}{Gbit} \times (1 + x)^{4} &= \SI{16}{Gbit} \\
+    \Rightarrow && (1 + x)^{4} &= 2 \\
+    \Rightarrow && 1 + x &= \sqrt[4]{2} \\
+    \Rightarrow && x &\approx 0.189
+\end{align*}
+即DRAM容量在2015至2019年间的增长速率为$18.9\%$
+
+\section{Exercise 1.17}
+公司刚刚买了一个新的Intel Core i5双核处理器， 你接到针对这一处理器来优化软件的任务。 你将在这个处理器上运行两个应用程序， 但它们的资源需求并不一样。第一个程序需要80\%的资源， 另一个需要20\%的资源。假定对该程序的一部分进行并行化时， 该部分的加速比为2.
+\subparagraph{1}
+假定第一个应用程序的40\%可以并行化， 那么在隔离运行时， 通过这个应用程序可以实现多大的加速比？
+\subparagraph{2}
+假定第二个应用程序的99\%可以并行化， 那么在隔离运行时， 通过这个应用程序可以实现多大的加速比？
+\subparagraph{3}
+假定第一个应用程序的40\%可以并行化， 如果对其实现并行化， 系统总加速比为多少？
+\subparagraph{4}
+假定第二个应用程序的99\%可以并行化， 如果对其实现并行化， 系统总加速比为多少？
+
+\paragraph{解}
+\subparagraph{1}
+通过这个应用程序可以实现的加速比为：
+\begin{equation*}
+    \frac{1}{60\% + \frac{40\%}{2}} = \frac{5}{4} = 1.25
+\end{equation*}
+\subparagraph{2}
+通过这个应用程序可以实现的加速比为：
+\begin{equation*}
+    \frac{1}{1\% + \frac{99\%}{2}} = \frac{200}{101} \approx 1.98
+\end{equation*}
+\subparagraph{3}
+系统总加速比为：
+\begin{equation*}
+    \frac{1}{80\% \times (60\% + \frac{40\%}{2}) + 20\%} = \frac{25}{21} \approx 1.19
+\end{equation*}
+\subparagraph{4}
+系统总加速比为：
+\begin{equation*}
+    \frac{1}{80\% + 20\% \times (1\% + \frac{99\%}{2})} = \frac{1000}{901} \approx 1.11
+\end{equation*}
+
+\section{}
+假设你的load/store计算机具有以下指令组合：
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|}
+    \hline
+    Operations & Frequency & No. of Clock Cycle \\ \hline
+    ALU ops    & 35\%      & 1                  \\ \hline
+    Load       & 25\%      & 2                  \\ \hline
+    Store      & 15\%      & 2                  \\ \hline
+    Branches   & 25\%      & 3                  \\ \hline
+    \end{tabular}
+    \end{table}
+\subparagraph{1}
+计算CPI.
+\subparagraph{2}
+我们观察到35\%的ALU操作都伴随着一条load指令。 现在我们用一条新的指令来替代这些ALU操作和与之对应的load操作， 这条新指令的执行需要花费1个时钟周期。加入这条指令后， branches需要花费5个时钟周期。请计算新
+版本的CPI。
+\subparagraph{3}
+如果新版本的时钟周期时间是旧版本的1.2倍， 那么哪个版本的CPU执行时
+间更短？
+
+\paragraph{解}
+\subparagraph{1}
+\begin{align*}
+    \text{CPI} &= 35\% \times 1 + 25\% \times 2 + 15\% \times 2 + 25\% \times 3 \\
+    &= 0.35 + 0.5 + 0.3 + 0.75 \\
+    &= 1.9
+\end{align*}
+\subparagraph{2}
+\begin{align*}
+    \text{CPI}' =& (35\% - 35\% \times 35\%) \times 1 + (25\% - 35\% \times 35\%) \times 2 + \\
+    & \indent (35\% \times 35\%) \times 1 +  15\% \times 2 + 25\% \times 5 \\
+    =& 0.2275 + 0.255 + 0.1225 + 0.3 + 1.25 \\
+    =& 2.1555
+\end{align*}
+\subparagraph{3}
+两个版本的CPU执行时间之比为：
+\begin{equation*}
+    \frac{2.1555 \times 1.2}{1.9} \approx 1.361 > 1
+\end{equation*}
+因此旧版本CPU执行时间更短。
+\end{document}
