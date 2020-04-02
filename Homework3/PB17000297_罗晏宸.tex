@@ -64,10 +64,14 @@
     \item 缺失的块不在 L2 中：L1 需要到内存中取 $b_0$，取回的块只提供给 L1。相应的 L1 有块 $b_1$ 会被替代。将 L1 被替代的块 $b_1$ 写入 L2，L2 也有块 $b_2$ 被替代。$b_2$ 如果是脏块，需要写回内存。
 \end{itemize}
 \section{}
-每当计算机空闲时，既可以将其置于待机状态（DRAM 仍然处于活动状态），也可以让他休眠。为了使其进入休眠状态，假定必须仅将 DRAM 的内容复制到永久性介质中，比如闪存中，如果将大小为 64 字节的缓存行读写至闪存需要 \SI{2.56}{\micro\joule}，读写至 DRAM 需要 \SI{0.5}{\nano\joule}，如果 \SI{8}{GB} DRAM 空闲功耗为 \SI{1.6}{\watt}，那么一个系统空闲多长时间后才能从休眠中获益？假定主存储器的容量为 \SI{8}{\giga\byte}
+每当计算机空闲时，既可以将其置于待机状态（DRAM 仍然处于活动状态），也可以让他休眠。为了使其进入休眠状态，假定必须仅将 DRAM 的内容复制到永久性介质中，比如闪存中，如果将大小为 64 字节的缓存行读写至闪存需要 \SI{2.56}{\micro\joule}，读写至 DRAM 需要 \SI{0.5}{\nano\joule}，如果 \SI{8}{\giga\byte} DRAM 空闲功耗为 \SI{1.6}{\watt}，那么一个系统空闲多长时间后才能从休眠中获益？假定主存储器的容量为 \SI{8}{\giga\byte}
 
 
 \paragraph{解}
+\begin{align*}
+    T &= \frac{\SI{8}{\giga\byte} \times 2 \times (\SI{2.56}{\micro\joule} + \SI{0.5}{\nano\joule})}{\SI{64}{\byte} \times \SI{1.6}{\watt}} \\
+    &= \SI{400.078}{\second}
+\end{align*}
 
 
 \section{}
