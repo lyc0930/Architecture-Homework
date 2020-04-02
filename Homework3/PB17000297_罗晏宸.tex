@@ -20,174 +20,107 @@
     numberstyle = \textcircled,
     frame = none,
 }
-\title{Homework 2}
-\author{PB17000297 罗晏宸}
-\date{March 20 2020}
+\sisetup{
+    binary-units = true
+}
+\title{Homework 3}
+\author{P$B_1$7000297 罗晏宸}
+\date{April 2 2020}
 
 \begin{document}
 \maketitle
 
 \section{}
-使用以下代码段(假定 R3 的初值为 R2+396)：
-
-\begin{lstlisting}[language={[x86masm]Assembler}]
-Loop:   LD      R1, 0(R2);
-        DADDI   R1, R1, #1;
-        SD      R1, 0, (R2);
-        DADDI   R2, R2, #4;
-        DSUB    R4, R3, R2;
-        BNEZ    R4, Loop;
-\end{lstlisting}
-\subparagraph{a} 列出上述代码中的所有数据相关，需写出数据相关类型，并记录寄存器，源指令和目标指令。例如，从指令\textcircled{1}到指令\textcircled{2}存在对于寄存器 R1 的 RAW 相关。
-\subparagraph{b} 给出这一指令序列对于 5 级 RISC 流水线的时序，该流水线没有设置任何旁路定向路径（Bypass or Forwarding），但假定在同一时钟周期中的寄存器读取与写入通过该寄存器堆进行“转发”,且分支是通过冲刷流水线来处理的。如果所有存储器引用耗时一个周期，这一循环的执行需要多少个周期？
-\subparagraph{c} 给出这一指令序列对于拥有完整旁路定向路径的 5 级 RISC 流水线的时序。如果所有存储器引用耗时一个周期，且在处理分支时采用预测转移失败策略，这一循环的执行需要多少个周期？
-\subparagraph{d} 给出这一指令序列对于拥有完整旁路定向路径的 5 级 RISC 流水线的时序。如果所有存储器引用耗时一个周期，且在处理分支时采用预测转移成功策略，这一循环的执行需要多少个周期？
+考虑一个由 L1 和 L2 数据缓存组成的两级存储器层次结构，假定两个缓存在写入命中时都使用写回策略，两者的块大小相同。列出在以下事件时采取的操作。
+\subparagraph{a} 当缓存组织方式为包含式层次结构时，发生 L1 缓存缺失(miss)
+\subparagraph{b} 当缓存组织方式为互斥式层次结构时，发生 L1 缓存缺失
+\subparagraph{c} 在 a 部分和 b 部分中，考虑被替换的块是脏块的可能性（需要更新和不需要更新的可能性）
 
 \paragraph{解}
 \subparagraph{a}
+当缓存组织方式为包含式层次结构时，L1 中数据总是出现在 L2 中。L1 中块缺失，可以分为以下两种情况：
 \begin{itemize}
-    \item 从指令\textcircled{1}到指令\textcircled{2}存在对于寄存器 R1 的 RAW 相关。
-    \item 从指令\textcircled{1}到指令\textcircled{2}存在对于寄存器 R1 的 WAW 相关。
-    \item 从指令\textcircled{1}到指令\textcircled{3}存在对于寄存器 R1 的 RAW 相关。
-    \item 从指令\textcircled{2}到指令\textcircled{3}存在对于寄存器 R1 的 WAW 相关。
-    \item 从指令\textcircled{3}到指令\textcircled{4}存在对于寄存器 R1 的 WAR 相关。
-    \item 从指令\textcircled{3}到指令\textcircled{4}存在对于寄存器 R2 的 WAR 相关。
-    \item 从指令\textcircled{4}到指令\textcircled{5}存在对于寄存器 R2 的 RAW 相关。
-    \item 从指令\textcircled{5}到指令\textcircled{6}存在对于寄存器 R4 的 RAW 相关。
+    \item 缺失的块在 L2 中：L2 将该块 $b_0$ 提供给 L1，相应的 L1 中某块 $b_1$ 会被替代。
+    \item 缺失的块不在 L2 中：L2 需要到内存中取，取回的块 $b_0$ 同时提供给 L1 和 L2。相应的 L1 和 L2 中有块会被替代。L2 中被替代的块 $b_1$ 如果也在 L1 中，那么 L1 中的这一块$b_1$ 需要被置为失效。
 \end{itemize}
 
 \subparagraph{b}
-R3初值为R2+396，每次循环都给R2加4，直到R2=R3时终止循环。一共要$396 \div 4 = 99$个周期。
-根据题意，要解决所有的数据相关，需要在指令3，4，5，6的IF段后加入两个stall，停止两个周期来保证解决数据相关。时序为：
+当缓存组织方式为互斥式层次结构时，L1 中数据绝不出现在 L2 中。L1 中块 $b_0$ 缺失，可以分为以下两种情况：
+\begin{itemize}
+    \item 缺失的块在 L2 中：L2 将该块 $b_0$ 提供给 L1，相应的 L1 中某块 $b_1$ 会被替代。互斥式层次结构 L1 中的缓存缺失会导致 L1 和 L2 中的块互换，即 $b_1$ 和 $b_0$ 互换。
+    \item 缺失的块不在 L2 中：L1 需要到内存中取 $b_0$，取回的块只提供给 L1。相应的 L1 有块 $b_1$ 会被替代。将 L1 被替代的块 $b_1$ 写入 L2，L2 也有块 $b_2$ 被替代。
+\end{itemize}
 
-\begin{table}[H]
-    \centering
-    \resizebox{\columnwidth}{!}{
-    \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-    \hline
-                      & 1  & 2  & 3  & 4                        & 5                        & 6  & 7                        & 8                        & 9  & 10 & 11                       & 12                       & 13 & 14                       & 15                       & 16                       & 17                       & 18 & 19 \\ \hline
-    \texttt{Loop:~~~~LD  R1, 0(R2); } & IF & ID & EX & M                        & WB                       &    &                          &                          &    &    &                          &                          &    &                          &                          &                          &                          &    &    \\ \hline
-    \texttt{~~~~~~~~DADDI R1, R1, \#1; } &    & IF & ID & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & EX & M                        & WB                       &    &    &                          &                          &    &                          &                          &                          &                          &    &    \\ \hline
-    \texttt{~~~~~~~~SD R1, 0, (R2); }     &    &    & IF & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & ID & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & EX & M  & WB                       &                          &    &                          &                          &                          &                          &    &    \\ \hline
-    \texttt{~~~~~~~~DADDI R2, R2, \#4; }  &    &    &    & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & IF & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & ID & EX & M                        & WB                       &    &                          &                          &                          &                          &    &    \\ \hline
-    \texttt{~~~~~~~~DSUB R4, R3, R2; }    &    &    &    &                          &                          &    & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & IF & ID & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & EX & M                        & WB                       &                          &                          &    &    \\ \hline
-    \texttt{~~~~~~~~BNEZ R4, Loop; }     &    &    &    &                          &                          &    &                          &                          &    & IF & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & ID & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & EX                       & M                        & WB &    \\ \hline
-                      &    &    &    &                          &                          &    &                          &                          &    &    &                          &                          & IF & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & {\color[HTML]{CB0000} S} & IF &    \\ \hline
-    \end{tabular}
-    }
-\end{table}
-循环需要17个时钟周期，因此总共的时钟周期数为
-$$
-    (99 - 1) \times 17 + (17 + 1) = 1684
-$$
 \subparagraph{c}
-在有完整旁路时，使用预测转移失败策略，需要在BNEZ指令之后冲刷流水线，时序为：
+考虑被替换的块是脏块的可能性。当缓存组织方式为包含式层次结构时，对于两种情况：
+\begin{itemize}
+    \item 缺失的块在 L2 中：L2 将该块 $b_0$ 提供给 L1，相应的 L1 中某块 $b_1$ 会被替代。由于两个缓存都采取写回策略，L1中被替代的块 $b_1$ 可能是脏块，如果是脏块，将它写入 L2 对应的块 $b_1$
+    \item 缺失的块不在 L2 中：L2 需要到内存中取，取回的块 $b_0$ 同时提供给 L1 和 L2。相应的 L1 和 L2 中有块会被替代。L2 中被替代的块 $b_1$ 如果也在 L1 中，那么 L1 中的这一块$b_1$ 需要被置为失效。L1 中被替代的块 $b_2$ 如果是脏块，将它写入 L2 对应的块 $b_1$。
+\end{itemize}
 
-\begin{table}[H]
-    \centering
-    \resizebox{\columnwidth}{!}{
-    \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|}
-    \hline
-                       & 1  & 2  & 3  & 4                        & 5                         & 6  & 7                         & 8                         & 9                           & 10                          & 11                        & 12                      \\ \hline
-    \texttt{Loop:~~~LD R1, 0(R2);} & IF & ID & EX & M                        & WB                        &    &                           &                           &                             &                             &                           &                         \\ \hline
-    \texttt{~~~~~~~~DADDI R1, R1, \#1;} &    & IF & ID & {\color[HTML]{CB0000} S} &  EX & M  & WB                        &                           &                             &                             &                           &                         \\ \hline
-    \texttt{~~~~~~~~SD R1, 0, (R2);}    &    &    & IF & {\color[HTML]{CB0000} S} &  ID & EX &  M  &  WB &                             &                             &                           &                         \\ \hline
-    \texttt{~~~~~~~~DADDI R2, R2, \#4;} &    &    &    & {\color[HTML]{CB0000} S} &  IF & ID &  EX &  M  & WB                          &                             &                           &                         \\ \hline
-    \texttt{~~~~~~~~DSUB R4, R3, R2;}   &    &    &    &                          &                           & IF &  ID &  EX & M                           & WB                          & {\color[HTML]{CB0000} }   & {\color[HTML]{CB0000} } \\ \hline
-    \texttt{~~~~~~~~BNEZ R4, Loop;}     &    &    &    &                          &                           &    & IF                        & ID                        & EX                          & M                           &  WB & {\color[HTML]{CB0000} } \\ \hline
-    \texttt{~~~~~~~~LW R1, 0(R2);}      &    &    &    &                          &                           &    &                           & IF                        & {\color[HTML]{CB0000} Miss} & {\color[HTML]{CB0000} Miss} & IF                        &                         \\ \hline
-    \end{tabular}
-    }
-\end{table}
-循环需要10个时钟周期，因此总共的时钟周期数为
-$$
-    (99 - 1) \times 9 + (9 + 1) = 991
-$$
-
-\subparagraph{d}
-在有完整旁路时，使用预测转移成功策略，不进行冲刷，时序为：
-
-\begin{table}[H]
-    \centering
-    \resizebox{\columnwidth}{!}{
-    \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-    \hline
-                       & 1  & 2  & 3  & 4                        & 5                         & 6  & 7                         & 8                         & 9                         & 10                        & 11                       & 12                        & 13 \\ \hline
-    \texttt{Loop:~~~LD R1, 0(R2);} & IF & ID & EX & M                        & WB                        &    &                           &                           &                           &                           &                          &                           &    \\ \hline
-    \texttt{~~~~~~~~DADDI R1, R1, \#1;} &    & IF & ID & {\color[HTML]{CB0000} S} &  EX & M  & WB                        &                           &                           &                           &                          &                           &    \\ \hline
-    \texttt{~~~~~~~~SD R1, 0, (R2);}    &    &    & IF & {\color[HTML]{CB0000} S} &  ID & EX &  M &  WB &                           &                           &                          &                           &    \\ \hline
-    \texttt{~~~~~~~~DADDI R2, R2, \#4;} &    &    &    & {\color[HTML]{CB0000} S} &  IF & ID &  EX &  M & WB                        &                           &                          &                           &    \\ \hline
-    \texttt{~~~~~~~~DSUB R4, R3, R2;}   &    &    &    &                          &                           & IF &  ID &  EX & M                         & WB                        & {\color[HTML]{CB0000} }  & {\color[HTML]{CB0000} }   &    \\ \hline
-    \texttt{~~~~~~~~BNEZ R4, Loop;}     &    &    &    &                          &                           &    & IF                        & {\color[HTML]{CB0000} S}  & ID                        & EX                        &  M &  WB &    \\ \hline
-                       &    &    &    &                          &                           &    &                           & & IF                        &  ID &  EX & M                        &                            \\ \hline
-    \end{tabular}
-    }
-\end{table}
-循环需要9个时钟周期，因此总共的时钟周期数为
-$$
-    (99 - 1) \times 8 + 12 = 796
-$$
-
+当缓存组织方式为互斥式层次结构时，L1 中块 $b_0$ 缺失，对于两种情况：
+\begin{itemize}
+    \item 缺失的块在 L2 中：L2 将该块 $b_0$ 提供给 L1，相应的 L1 中某块 $b_1$ 会被替代。互斥式层次结构 L1 中的缓存缺失会导致 L1 和 L2 中的块互换，即 $b_1$ 和 $b_0$ 互换。
+    \item 缺失的块不在 L2 中：L1 需要到内存中取 $b_0$，取回的块只提供给 L1。相应的 L1 有块 $b_1$ 会被替代。将 L1 被替代的块 $b_1$ 写入 L2，L2 也有块 $b_2$ 被替代。$b_2$ 如果是脏块，需要写回内存。
+\end{itemize}
 \section{}
-有一条静态多功能流水线由 5 段组成，加法用 1,3,4,5 段，乘法用 1,2,5 段，第三段的时间为$2\Delta t$ ，其余各段时间均为$\Delta t$ ，而且流水线的输出可以直接返回输入端或暂存于相应的流水寄存器中。现要在该流水线上计算$\displaystyle \prod_{i = 1}^4(A_i + B_i)$，画出其时空图，并计算其吞吐率、加速比和效率。
-\begin{figure}[H]
-    \centering
-    \includegraphics[width = 270pt]{2.jpg}
-\end{figure}
+每当计算机空闲时，既可以将其置于待机状态（DRAM 仍然处于活动状态），也可以让他休眠。为了使其进入休眠状态，假定必须仅将 DRAM 的内容复制到永久性介质中，比如闪存中，如果将大小为 64 字节的缓存行读写至闪存需要 \SI{2.56}{\micro\joule}，读写至 DRAM 需要 \SI{0.5}{\nano\joule}，如果 \SI{8}{GB} DRAM 空闲功耗为 \SI{1.6}{\watt}，那么一个系统空闲多长时间后才能从休眠中获益？假定主存储器的容量为 \SI{8}{\giga\byte}
+
 
 \paragraph{解}
-首先计算四次加法$A_i + B_i$，再计算两次乘法$(A_i + B_i) \times (A_{i + 1} + B_{i + 1})$，再对结果做一次乘法，时空图如下：
-
-\begin{table}[H]
-    \centering
-    \resizebox{\columnwidth}{!}{
-        \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-            \hline
-            5 &                          &                          &                          &                          & \cellcolor[HTML]{FD6864} &                          & \cellcolor[HTML]{FE0000} &                          & \cellcolor[HTML]{CB0000} &                          & \cellcolor[HTML]{9A0000} &                          &                          & \cellcolor[HTML]{3166FF} & \cellcolor[HTML]{3531FF} &                          &                          & \cellcolor[HTML]{00009B} &    \\ \hline
-            4 &                          &                          &                          & \cellcolor[HTML]{FD6864} &                          & \cellcolor[HTML]{FE0000} &                          & \cellcolor[HTML]{CB0000} &                          & \cellcolor[HTML]{9A0000} &                          &                          &                          &                          &                          &                          &                          &                          &    \\ \hline
-            3 &                          & \cellcolor[HTML]{FD6864} & \cellcolor[HTML]{FD6864} & \cellcolor[HTML]{FE0000} & \cellcolor[HTML]{FE0000} & \cellcolor[HTML]{CB0000} & \cellcolor[HTML]{CB0000} & \cellcolor[HTML]{9A0000} & \cellcolor[HTML]{9A0000} &                          &                          &                          &                          &                          &                          &                          &                          &                          &    \\ \hline
-            2 &                          &                          &                          &                          &                          &                          &                          &                          &                          &                          &                          &                          & \cellcolor[HTML]{3166FF} & \cellcolor[HTML]{3531FF} &                          &                          & \cellcolor[HTML]{00009B} &                          &    \\ \hline
-            1 & \cellcolor[HTML]{FD6864} &                          & \cellcolor[HTML]{FE0000} &                          & \cellcolor[HTML]{CB0000} &                          & \cellcolor[HTML]{9A0000} &                          &                          &                          &                          & \cellcolor[HTML]{3166FF} & \cellcolor[HTML]{3531FF} &                          &                          & \cellcolor[HTML]{00009B} &                          &                          &    \\ \hline
-              & 1                        & 2                        & 3                        & 4                        & 5                        & 6                        & 7                        & 8                        & 9                        & 10                       & 11                       & 12                       & 13                       & 14                       & 15                       & 16                       & 17                       & 18                       & 19 \\ \hline
-            \end{tabular}
-    }
-\end{table}
-在$18\Delta t$的时间中，得到7个结果，吞吐率为
-\begin{equation*}
-    \text{TP} = \frac{7}{18\Delta t}
-\end{equation*}
-
-加速比为：
-\begin{equation*}
-    \text{S} = \frac{5 \times 4\Delta t + 3 \times 3 \Delta t}{18 \Delta t} = \frac{29}{18} \approx 1.611
-\end{equation*}
-
-效率为：
-\begin{equation*}
-    \text{E} = \frac{5 \times 4\Delta t + 3 \times 3\Delta t}{5 \times 18\Delta t} = \frac{29}{90} \approx 0.322
-\end{equation*}
 
 
 \section{}
-假定原机器是一个 5 级流水线，其时钟周期为 \SI{1}{\nano\second}。第二种机器为 12 级流水线，时钟周期为 \SI{0.6}{\nano\second}。由于数据相关，5 级流水线每 5 条指令经历一次 stall，而 12 级流水线每 8 条指令经历三次 stall。此外，分支占全部指令的 20\%，两台机器的预测错误率都是 5\%。
-\subparagraph{a} 仅考虑数据相关，12 级流水线相对于 5 级流水线的加速比为多少？
-\subparagraph{b} 在考虑分支预测错误而导致 stall 的情况下，如果第一台机器的分支预测错误的额外代价为 2 个周期，而第二台机器为 5 个周期，则每种机器的 CPI 为多少？
+你正要采用一个具有以下特征的处理器构建系统：循序执行，运行频率为 \SI{1.1}{\giga\hertz}，排除存储器访问在外的 CPI 为 1。只有载入和存储指令能从存储器读写数据，载入指令占全部指令的 20\%，存储指令占 5\%。此计算机的存储器系统包括一个分离的 L1 缓存，它在命中时不会产生任何代价。I 缓存和 D 缓存都是直接映射，分别为 \SI{32}{KB}。I 缓存的缺失率为 2\%，块大小为 32 字节，D 缓存为直写缓存，缺失率为 5\%，块大小为 16 字节。D 缓存上有一个写入缓冲区，消除了绝大多数写入操作的停顿，占总写入操作的 95\%（指 CPU 的写停顿比例）。L2 为 \SI{512}{\kilo\byte}，统一 L2 的块大小为 64 字节，访问时间为 \SI{15}{\nano\second}.它由 128 位数据总线连接到 L1 缓存，运行频率为 \SI{266}{\mega\hertz}，每条总线每个时间周期可以传送一个 128 位字。在发往此系统 L2 缓存的所有存储器引用中，其中 80\% 的引用无须进入主存储器就可以得到满足。另外，在被替换的所有块中，50\% 为脏块。主存储器的宽度为 128 位，访问延迟为 \SI{60}{\nano\second}，在此之后，可以在这个宽 128 位，频率为 \SI{133}{\mega\hertz} 的主存储器总线上以每个周期传送一个字的速率来传送任意数目的总线字。
+
+\subparagraph{a} 指令访问的存储器平均访问时间为多少
+\subparagraph{b} 数据读取的存储器平均访问时间为多少
+\subparagraph{c} 数据写入的存储器平均访问时间为多少
+\subparagraph{d} 包括存储器访问在内的整体 CPI 为多少
 
 \paragraph{解}
+首先计算缓存的缺失代价
+\begin{align*}
+    \text{缺失代价}_{\text{L1 I-缓存}} & = \SI{15}{\nano\second} + \frac{\SI{32}{\byte}}{\SI{16}{\byte}} \times \frac{1}{\SI{266}{\mega\hertz}} \times 1000 = \SI{22.5}{\nano\second}            \\
+    \text{缺失代价}_{\text{L1 D-缓存}} & = \SI{15}{\nano\second} + \frac{\SI{16}{\byte}}{\SI{16}{\byte}} \times \frac{1}{\SI{266}{\mega\hertz}} \times 1000 = \SI{18.75}{\nano\second}           \\
+    \text{缺失代价}_{\text{L2 缓存}}   & = \left( \SI{60}{\nano\second} + \frac{\SI{64}{\byte}}{\SI{16}{\byte}} \times \frac{1}{\SI{133}{\mega\hertz}} \times 1000 \right) \times (100\% + 50\%) \\ &= \SI{135}{\nano\second}
+\end{align*}
 \subparagraph{a}
-仅考虑数据相关，加速比为：
-\begin{equation*}
-    \text{S} = \frac{\frac{8 \times 12 + 3}{8} \times 0.6}{\frac{5 \times 5 + 1}{5} \times 1} = \frac{297}{208} \approx 1.428
-\end{equation*}
+\begin{align*}
+    \text{存储器平均访问时间}_{\text{I}} & = \text{缺失率}_{\text{L1 I-缓存}}                                                                                                      \\
+                                         & \indent \times \left(\text{缺失代价}_{\text{L1 I-缓存}} + \text{缺失率}_{\text{L2 缓存}} \times \text{缺失代价}_{\text{L2 缓存}}\right) \\
+                                         & = 2\% \times (\SI{22.5}{\nano\second} + 20\% \times \SI{135}{\nano\second})                                                             \\
+                                         & = \SI{0.99}{\nano\second}
+\end{align*}
 
 \subparagraph{b}
-第一台机器：
-\begin{equation*}
-    \text{CPI} = 5 + \frac{1}{5} + 2 \times 0.2 \times 0.05 = 5.22
-\end{equation*}
+\begin{align*}
+    \text{存储器平均访问时间}_{\text{read}} & = \text{缺失率}_{\text{L1 D-缓存}}                                                                                           \\
+                                            & \indent \times (\text{缺失代价}_{\text{L1 D-缓存}} + \text{缺失率}_{\text{L2 缓存}} \times \text{缺失代价}_{\text{L2 缓存}}) \\
+                                            & = 5\% \times (\SI{18.75}{\nano\second} + 20\% \times \SI{135}{\nano\second})                                                 \\
+                                            & = \SI{2.29}{\nano\second}
+\end{align*}
 
-第二台机器：
-\begin{equation*}
-    \text{CPI} = 12 + \frac{3}{8} + 2 \times 0.2 \times 0.05 = 12.395
-\end{equation*}
+\subparagraph{a}
+如果停顿消除到 L1，则有
+\begin{align*}
+    \text{存储器平均访问时间}_{\text{write}} & = \text{写停顿比例}                                                                                                                      \\
+                                             & \indent \times \left(\text{缺失代价}_{\text{L1 D-缓存}} + \text{缺失率}_{\text{L2 缓存}} \times \text{缺失代价}_{\text{L2 缓存}} \right) \\
+                                             & = (1 - 95\%) \times (\SI{18.75}{\nano\second} + 20\% \times \SI{135}{\nano\second})                                                      \\
+                                             & = \SI{2.29}{\nano\second}
+\end{align*}
+如果停顿消除到 L2，则有
+\begin{align*}
+    \text{存储器平均访问时间}_{\text{write}} & = \text{缺失代价}_{\text{L1 D-缓存}}                                                                      \\
+                                             & \indent + \text{写停顿比例} \times \text{缺失率}_{\text{L2 缓存}} \times \text{缺失代价}_{\text{L2 缓存}} \\
+                                             & = \SI{18.75}{\nano\second} +  (1 - 95\%) \times (20\% \times \SI{135}{\nano\second})                      \\
+                                             & = \SI{20.1}{\nano\second}
+\end{align*}
+
+\subparagraph{d}
+\begin{align*}
+    \text{CPI}_{\text{total}} &= \text{CPI}_{\text{base}} + \text{CPI}_{\text{I}} + \text{CPI}_{\text{read}} + \text{CPI}_{\text{write}} \\
+    &= 1 + (\SI{0.99}{\nano\second} \times + 20\% \times \SI{2.29}{\nano\second} + 5\% \times \SI{2.29}{\nano\second}) \times \SI{1.1}{\giga\hertz} \\
+    &= 2.71875
+\end{align*}
 \end{document}
