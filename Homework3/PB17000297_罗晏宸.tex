@@ -69,8 +69,8 @@
 
 \paragraph{解}
 \begin{align*}
-    T &= \frac{\SI{8}{\giga\byte} \times 2 \times (\SI{2.56}{\micro\joule} + \SI{0.5}{\nano\joule})}{\SI{64}{\byte} \times \SI{1.6}{\watt}} \\
-    &= \SI{400.078}{\second}
+    T & = \frac{\SI{8}{\giga\byte} \times 2 \times (\SI{2.56}{\micro\joule} + \SI{0.5}{\nano\joule})}{\SI{64}{\byte} \times \SI{1.6}{\watt}} \\
+      & = \SI{400.078}{\second}
 \end{align*}
 
 
@@ -105,7 +105,7 @@
                                             & = \SI{2.29}{\nano\second}
 \end{align*}
 
-\subparagraph{a}
+\subparagraph{c}
 如果停顿消除到 L1，则有
 \begin{align*}
     \text{存储器平均访问时间}_{\text{write}} & = \text{写停顿比例}                                                                                                                      \\
@@ -123,8 +123,8 @@
 
 \subparagraph{d}
 \begin{align*}
-    \text{CPI}_{\text{total}} &= \text{CPI}_{\text{base}} + \text{CPI}_{\text{I}} + \text{CPI}_{\text{read}} + \text{CPI}_{\text{write}} \\
-    &= 1 + (\SI{0.99}{\nano\second} \times + 20\% \times \SI{2.29}{\nano\second} + 5\% \times \SI{2.29}{\nano\second}) \times \SI{1.1}{\giga\hertz} \\
-    &= 2.71875
+    \text{CPI}_{\text{total}} & = \text{CPI}_{\text{base}} + \text{CPI}_{\text{I}} + \text{CPI}_{\text{read}} + \text{CPI}_{\text{write}}                                      \\
+                              & = 1 + (\SI{0.99}{\nano\second} \times + 20\% \times \SI{2.29}{\nano\second} + 5\% \times \SI{2.29}{\nano\second}) \times \SI{1.1}{\giga\hertz} \\
+                              & = 2.71875
 \end{align*}
 \end{document}
