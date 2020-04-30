@@ -1,0 +1,164 @@
+\documentclass{article}
+\usepackage[UTF8]{ctex}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[colorlinks, linkcolor = black]{hyperref}
+\usepackage{float}
+\usepackage[table, xcdraw]{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{tikz}
+
+\title{Homework 5}
+\author{PB17000297 罗晏宸}
+\date{April 30 2020}
+
+\begin{document}
+\maketitle
+
+\section{Exercise 3.15}
+假设有一条长流水线，仅仅对条件转移指令使用分支目标缓冲。假定分支预测错误的开销为 4 个时钟周期，缓冲不命中的开销为 3 个时钟周期。假设命中率为 90\%，准确率为 90\%，分支频率为 15\%，没有分支的基本 CPI 为 1.
+\subparagraph{a.} 求程序执行的 CPI。
+\subparagraph{b.} 相对于固定 2 个时钟周期延迟的分支处理，哪种更快？
+
+\paragraph{解}
+\subparagraph{a}
+有 BTB 的停顿数可计算如下
+\begin{table}
+    \centering
+    \begin{tabular}{cclc}
+        \toprule
+        BTB 结果 & BTB 预测 & 频率                                     & 代价 \\
+        \midrule
+        未命中   &          & $15\% \times 10\% = 1.50\%$              & 3    \\
+        命中     & 正确     & $15\% \times 90\% \times 90\% = 12.15\%$ & 0    \\
+        命中     & 错误     & $15\% \times 90\% \times 10\% = 1.35\%$  & 4    \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+\begin{align*}
+    \text{Stalls}_{\text{BTB}} & = (1.50\% \times 3) + (12.15\% \times 0) + (1.35\% \times 4) \\
+                               & = 0.099                                                      \\
+    \text{CPI}_{\text{BTB}}    & = \text{CPI}_{\text{基本}} + \text{Stalls}_{\text{BTB}}      \\
+                               & =1.0 + 0.099                                                 \\
+                               & =1.099
+\end{align*}
+
+\subparagraph{b.}
+加速比为
+\begin{align*}
+    \frac{\text{CPI}_{\text{无 BTB}}}{\text{CPI}_{\text{BTB}}} = \frac{1.0 + 15\% \times 2}{1.099} \approx 1.183 > 1
+\end{align*}
+因此使用分支目标缓冲的方法相比于固定 2 个时钟周期延迟的分支处理更快。
+
+\section{}
+假设分支目标缓冲的命中率为 90\%，程序中无条件转移的指令为 5\%，其他指
+令 CPI 为 1。假设分支目标缓冲包含分支目标指令，允许无条件转移指令进入分支目标缓冲，则 CPI 为多少。假定原来的 CPI 为 1.1。
+
+\paragraph{解}
+% 无条件分支指令的特点是只要执行肯定分支成功。因此，对于进入分支目标缓冲器的无条件分支指令，分支预测的精度为100\%，也就不会带来分支延迟。而没有进入分支目标缓冲器的无条件分支指令会带来一定分支延迟。首先要求出一条无条件分支指令的分支延迟是多少，不妨设为 $x$ 个时钟周期。 由题知无条件分支指令不进入分支目标缓冲时程序执行的 CPI 为 1.1 ，而程序中没有无条件转移指令的 CPI 为 1 ，因此有
+设无条件分支指令的分支延迟为$x$个时钟周期，由题分支目标缓冲包含分支目标指令，有
+\begin{align*}
+                &  & \text{CPI} & = \text{CPI}_{\text{基本}} + \text{Stalls}_{\text{BTB}} \\
+                &  &            & = 1.0 + 5\% \times x                                    \\
+                &  &            & = 1.1                                                   \\
+    \Rightarrow &  & x          & = 2
+\end{align*}
+因此，允许无条件分支指令进入分支目标缓冲器时有
+\begin{equation*}
+    \text{CPI}' = 1.0 + 5\% \times (1 - 90\%) \times 2 = 1.01
+\end{equation*}
+
+\section{}
+设指令流水线由取指令、分析指令和执行指令 3 个部件构成，每个部件经过的时间为 $\Delta t$，连续流入 12 条指令。分别画出标量流水处理机以及 ILP 均为 4 的超标量处理机、超长指令字处理机的时空图，并分别计算它们相对于标量流水处理机的加速比。
+
+\paragraph{解}
+标量流水处理机以及 ILP 均为 4 的超标量处理机、超长指令字处理机的时空图分别如图\ref{figure:1}(\subref{1} - \subref{4})所示。
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \centering
+\begin{tikzpicture}[scale = 0.5]
+    \draw[->] (0, 0) -- (15, 0) coordinate (x axis);
+    \draw[->] (0, 0) -- (0, 4)  coordinate (y axis);
+    \node at (16, -0.5) [] {时间};
+    \foreach \y/\ytext in {0.5/取指, 1.5/分析, 2.5/执行 }
+        \node at (-1, \y) [] {\ytext};
+    \draw (0, 0) grid (12, 1);
+    \draw (1, 1) grid (13, 2);
+    \draw (2, 2) grid (14, 3);
+    \draw[dashed] (14, 2) -- (14, 0) node [below] {14};
+\end{tikzpicture}
+\caption{标量流水处理机的时空图}
+\label{1}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+\begin{tikzpicture}[scale = 0.5]
+    \draw[->] (0, 0) -- (6, 0) coordinate (x axis);
+    \draw[->] (0, 0) -- (0, 13)  coordinate (y axis);
+    \node at (7, -0.5) [] {时间};
+    \foreach \y/\ytext [evaluate=\y as \z using int(\y + 4)] in {0/取指, 4/分析, 8/执行 }
+        \draw[|<->|] (-0.5, \y) to node [left] {\ytext} (-0.5, \z);
+    \draw (0, 0) grid (3, 4);
+    \draw (1, 4) grid (4, 8);
+    \draw (2, 8) grid (5, 12);
+    \draw[dashed] (5, 8) -- (5, 0) node [below] {5};
+    \draw[dashed] (1, 8) -- (0, 8);
+    \draw[dashed] (2, 12) -- (0, 12);
+\end{tikzpicture}
+\caption{超标量处理机时空图}
+\label{2}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+\begin{tikzpicture}[scale = 0.5]
+    \draw[->] (0, 0) -- (6, 0) coordinate (x axis);
+    \draw[->] (0, 0) -- (0, 7)  coordinate (y axis);
+    \node at (7, -0.5) [] {时间};
+    \draw[|<->|] (-0.5, 2) to node [left] {执行} (-0.5, 6);
+    \foreach \y/\ytext in {0.5/取指, 1.5/分析}
+        \node at (-1.5, \y) [] {\ytext};
+    \draw (0, 0) grid (3, 1);
+    \draw (1, 1) grid (4, 2);
+    \draw (2, 2) grid (5, 6);
+    \draw[dashed] (5, 2) -- (5, 0) node [below] {5};
+    \draw[dashed] (1, 2) -- (0, 2);
+    \draw[dashed] (2, 6) -- (0, 6);
+\end{tikzpicture}
+\caption{超长指令字处理机时空图}
+\label{3}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+\begin{tikzpicture}[scale = 0.5]
+    \draw[->] (0, 0) -- (6.5, 0) coordinate (x axis);
+    \draw[->] (0, 0) -- (0, 13)  coordinate (y axis);
+    \node at (7.5, -0.5) [] {时间};
+    \foreach \y/\ytext [evaluate = \y as \z using int(\y + 4)] in {0/取指, 4/分析, 8/执行 }
+        \draw[|<->|] (-0.5, \y) to node [left] {\ytext} (-0.5, \z);
+    \foreach \x [evaluate = \x as \y using (\x * 4)] in {0, 0.25, 0.5, ..., 2.75}
+        \draw[shift={(\x, \y)}] (0, 0) grid +(3, 1);
+    \foreach \x/\y in {4/4, 5/8, 5.75/11}
+        \draw[dashed] (\x, \y) -- (\x, 0) node [below] {\x};
+    \draw[dashed] (2, 8) -- (0, 8);
+    \draw[dashed] (2.75, 12) -- (0, 12);
+\end{tikzpicture}
+\caption{超流水处理机的时空图}
+\label{4}
+\end{subfigure}
+\caption{流水线时空图}
+\label{figure:1}
+\end{figure}
+对于标量流水处理机，由图\subref{1}可知执行完 12 条指令需要 $T_1 = 14 \Delta t$。ILP 为 4的超标量流水处理机中，每个时钟周期同时启动 4 条指令，由图\subref{2}可知执行完 12 条指令需要 $T_2 = 5 \Delta t$。对于超长指令字处理机，每 4 条指令组成 1 条长指令，12 条指令共形成 3 条长指令，\subref{3}可知执行完需要 $T_3 = 5 \Delta t$。对于超流水处理机，每 $\dfrac{1}{4}$ 个时钟周期启动 1 条指令。由图\subref{4}可知执行完 12 条指令需 $T_4 = 5.75 \Delta t$
+
+ILP 均为 4 的超标量处理机、超长指令字处理机相对于标量流水处理机的加速比可计算如下
+\begin{align*}
+    \text{加速比}_1 &= 1.0 \\
+    \text{加速比}_2 &= \frac{T_1}{T_2} = \frac{14 \Delta t}{5 \Delta t} = \frac{14}{5} = 2.8 \\
+    \text{加速比}_3 &= \frac{T_1}{T_3} = \frac{14 \Delta t}{5 \Delta t} = \frac{14}{5} = 2.8 \\
+    \text{加速比}_4 &= \frac{T_1}{T_4} = \frac{14 \Delta t}{5.75 \Delta t} = \frac{56}{23} \approx 2.435
+\end{align*}
+
+\end{document}
