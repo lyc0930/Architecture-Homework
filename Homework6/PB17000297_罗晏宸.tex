@@ -1,0 +1,156 @@
+\documentclass{article}
+\usepackage[UTF8]{ctex}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[table, xcdraw]{xcolor}
+\usepackage{listings}
+\lstset{
+    basicstyle = \ttfamily,
+    keywordstyle = \bfseries,
+    linewidth = \linewidth,
+    % xleftmargin=.1\textwidth,
+    % xrightmargin=.1\textwidth,
+    breaklines = true,
+    breakatwhitespace = true,
+    breakautoindent = true,
+    frame = none,
+    commentstyle = \small\color{gray}
+}
+\usepackage{siunitx}
+\sisetup{
+    binary-units = true
+}
+\usepackage{enumerate}
+\usepackage{enumitem}
+
+\title{Homework 6}
+\author{PB17000297 罗晏宸}
+\date{May 18 2020}
+
+\begin{document}
+\maketitle
+
+\section{Exercise 4.9}
+假定处理器运行频率为 \SI{700}{\mega\hertz}，最大向量长度为 64，载入/存储单元的启动开销为 15 个时钟周期，乘法单元为 8 个时钟周期，加法/减法单元为 5 个时钟周期。在该处理器上进行如下运算，将两个包含单精度复数值的向量相乘：
+\begin{lstlisting}[breaklines = false, language=C++]
+for (i = 0; i < 300; i++) {
+    c_re[i] = a_re[i] * b_re[i] - a_im[i] * b_im[i];
+    c_im[i] = a_re[i] * b_im[i] + a_im[i] * b_re[i];
+}
+\end{lstlisting}
+\subparagraph{(1)} 这个内核的运算密度为多少（注：运算密度指运行程序时执行的\textbf{浮点运算数}除以主存储器中\textbf{访问的字节数}）？
+\subparagraph{(2)} 将此循环转换为使用条带挖掘（Strip Mining）的 VMIPS 汇编代码。
+\subparagraph{(3)} 假定采用链接和单一存储器流水线，需要多少次钟鸣？每个复数结果值需要多少个时钟周期（包括启动开销在内）？
+\subparagraph{(4)} 如果向量序列被链接在一起，每个复数结果值需要多少个时钟周期（包含开销）？
+\subparagraph{(5)} 现在假定处理器有三条存储器流水线和链接。如果该循环的访问过程中没有组冲突，每个结果需要多少个时钟周期？
+
+\paragraph{解}
+\subparagraph{(1)} 执行 6 次浮点运算，读 4 个浮点数，写 2 个浮点数，访问 $(4 + 2) \times 4 = 24$ 个字节。内核运算密度为
+$$
+    \frac{6}{(4 + 2) \times 4} = \frac{1}{4}
+$$
+\subparagraph{(2)}
+\begin{lstlisting}[language={[x86masm]Assembler}, breakindent = 41ex]
+        li          $VL, 44         ; 前 44 步操作
+        li          $r1, 0          ; 初始化下标
+loop:   lv          $v1, a_re + $r1 ; load a_re
+        lv          $v3, b_re + $r1 ; load b_re
+        mulvv.s     $v5, $v1, $v3   ; a_re * b_re
+        lv          $v2, a_im + $r1 ; load a_im
+        lv          $v4, b_im + $r1 ; load b_im
+        mulvv.s     $v6, $v2, $v4   ; a_im * b_im
+        subvv.s     $v5, $v5, $v6   ; a_re * b_re - a_im * b_im
+        sv          $v5, c_re + $r1 ; store c_re
+        mulvv.s     $v5, $v1, $v4   ; a_re * b_im
+        mulvv.s     $v6, $v2, $v3   ; a_im * b_re
+        addvv.s     $v5, $v5, $v6   ; a_re * b_im + a_im * b_re
+        sv          $v5, c_im + $r1 ; store c_im
+        bne         $r1, 0, else    ; 是否首次循环
+        addi        $r1, $r1, #176  ; 首次循环
+        j loop                      ; 跳转下次循环
+else:   addi        $r1, $r1, #256  ; 非首次循环
+skip:   blt         $r1, 1200, loop ; 跳转下次循环
+\end{lstlisting}
+
+\subparagraph{(3)}
+\begin{lstlisting}[language={[x86masm]Assembler}, numbers = left, xleftmargin=.2\textwidth]
+mulvv.s     lv
+lv          mulvv.s
+subvv.s     sv
+mulvv.s     lv      ; load 下一个向量
+mulvv.s     lv      ; load 下一个向量
+addvv.s     sv
+\end{lstlisting}
+共需要 6 次钟鸣，每个复数结果值需要的时钟周期为
+$$
+    \frac{6 \times 64 + 15 \times 6 + 8 \times 4 + 5 \times 2}{2 \times 64} = \frac{516}{128} = \frac{129}{32} = 4.03125
+$$
+\subparagraph{(5)}
+\begin{lstlisting}[language={[x86masm]Assembler}, numbers = left, xleftmargin=.2\textwidth]
+mulvv.s
+mulvv.s
+subvv.s     sv
+mulvv.s
+mulvv.s     lv
+addvv.s     sv  lv  lv  lv ; load 下一个向量
+\end{lstlisting}
+共需要 6 次钟鸣，因此每个复数结果值需要的时钟周期为$4.03125$与上相同。
+
+\section{Exercise 4.16}
+假定一个虚设 GPU 具有以下特性：
+\begin{enumerate}[leftmargin = .1\linewidth, rightmargin = .1\linewidth, label=$\bullet$]
+    \item 时钟频率为 \SI{1.5}{\giga\hertz}
+    \item 包含 16 个 SIMD 处理器，每个处理器包含 16 个单精度浮点单元
+    \item 片外存储器带宽为 \SI{100}{{\giga\byte}\per\second}
+\end{enumerate}
+\subparagraph{(1)} 不考虑存储器带宽，假定所有存储器延迟可以隐藏，则这一 GPU 的峰值单精度浮点吞吐量为多少 \si{GFLOP\per\second}？
+\subparagraph{(2)} 在给定存储器带宽限制下，这一吞吐量是否可持续？
+\paragraph{解}
+\subparagraph{(1)}
+$$
+    \SI{1.5}{\giga\hertz} \times 16 \times 16 = \SI{384}{GFLOP\per\second}
+$$
+\subparagraph{(2)}
+每个单精度运算需要读 2 个操作数，写 1 个操作数，访问$(2 + 1) \times 4 = 12$个字节，需要$\SI{12}{\byte} \times \SI{384}{GFLOP\per\second} = \SI{4608}{{\giga\byte}\per\second}$，因此吞吐量不可持续。
+
+\section{Exercise 4.13}
+假定有一种包含 10 个 SIMD 处理器的 GPU 体系结构。每条 SIMD 指令的宽度为 32，每个 SIMD 处理器包含 8 个车道，用于执行单精度运算和载入/存储指令，也就是说，每个非分岔 SIMD 指令每 4 个时钟周期可以生成 32 个结果。假定内核的分岔分支将导致平均 80\%的线程为活动的。假定在所执行的全部 SIMD 指令中，70\%为单精度运算，20\%为载入/存储。由于并不包含所有存储器延迟，所以假定SIMD 指令平均发射率为 0.85。假定 GPU 的时钟速度为 \SI{1.5}{\giga\hertz}。
+\subparagraph{(1)} 计算这个内核在这个 GPU 上的吞吐量，单位为 \si{GFLOP\per\second}。
+\subparagraph{(2)} 对于以下改进中的\textbf{每一项}，吞吐量的加速比为多少？
+\begin{enumerate}[leftmargin = .2\linewidth, rightmargin = .2\linewidth, label=\textcircled{\arabic*}]
+    \item 将单精度车道数增大至 16
+    \item 将 SIMD 处理器数增大至 15（假定这一改变不会影响所有其他性能度量，代码会扩展到增加的处理器上）。
+    \item 添加缓存可以有效地将存储器延迟缩减 40\%，这样会将指令发射率增加至0.95。
+\end{enumerate}
+
+\paragraph{解}
+\subparagraph{(1)}
+$$
+    \SI{1.5}{\giga\hertz} \times 80\% \times 85\% \times 70\% \times 10 \times 8 = \SI{57.12}{GFLOP\per\second}
+$$
+\subparagraph{(2)}
+\begin{enumerate}[leftmargin = .2\linewidth, rightmargin = .2\linewidth, label=\textcircled{\arabic*}]
+    \item 加速比为
+          \begin{align*}
+                & \frac{ \SI{1.5}{\giga\hertz} \times 80\% \times 85\% \times 70\% \times 10 \times 16}{\SI{57.12}{GFLOP\per\second}} \\
+              = & \frac{\SI{114.24}{GFLOP\per\second}}{\SI{57.12}{GFLOP\per\second}}                                                  \\
+              = & 2
+          \end{align*}
+    \item 加速比为
+          \begin{align*}
+                & \frac{ \SI{1.5}{\giga\hertz} \times 80\% \times 85\% \times 70\% \times 15 \times 8}{\SI{57.12}{GFLOP\per\second}} \\
+              = & \frac{\SI{85.68}{GFLOP\per\second}}{\SI{57.12}{GFLOP\per\second}}                                                  \\
+              = & 1.5
+          \end{align*}
+    \item 加速比为
+          \begin{align*}
+                & \frac{ \SI{1.5}{\giga\hertz} \times 80\% \times 95\% \times 70\% \times 10 \times 8}{\SI{57.12}{GFLOP\per\second}} \\
+              = & \frac{\SI{63.84}{GFLOP\per\second}}{\SI{57.12}{GFLOP\per\second}}                                                  \\
+              = & \frac{19}{17}                                                                                                      \\
+              = & 1.118
+          \end{align*}
+\end{enumerate}
+\end{document}
